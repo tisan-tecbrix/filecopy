@@ -1,0 +1,29 @@
+name: Azure Storage Sync
+
+on:
+  push:
+    branches:
+      - main  # Adjust this branch as needed
+
+jobs:
+  sync_to_azure:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Delete Old Files
+      run: |
+        # Delete files from Azure Storage using Azure CLI
+        az storage blob delete-batch --source ${{ secrets.AZURE_CONTAINER_NAME }} --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} --account-key ${{ secrets.AZURE_STORAGE_KEY }} --pattern "<file-pattern-to-delete>"
+
+    - name: Upload New Files
+      run: |
+        # Upload files to Azure Storage using Azure CLI
+        az storage blob upload-batch --destination ${{ secrets.AZURE_CONTAINER_NAME }} --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} --account-key ${{ secrets.AZURE_STORAGE_KEY }} --source <local-folder-path>
